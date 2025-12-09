@@ -6,6 +6,7 @@ import os
 import requests
 import google.generativeai as genai
 from dotenv import load_dotenv
+import chromadb
 
 # Load environment variables from .env file
 load_dotenv()
@@ -89,9 +90,47 @@ def format_data_for_ai(latest_data, diagnose_data):
     
     return data_str
 
+def query_manual_collection(query_term, top_k=2):
+    """
+    Query the ChromaDB collection for relevant chunks from the manual.
+    
+    Parameters:
+    -----------
+    query_term : str
+        Search term to query
+    top_k : int
+        Number of top results to retrieve (default: 2)
+    
+    Returns:
+    --------
+    list
+        List of retrieved document chunks
+    """
+    try:
+        # Create a persistent ChromaDB client
+        client = chromadb.PersistentClient(path="./chroma_db")
+        
+        # Get the collection
+        collection = client.get_collection(name="hvac_manual")
+        
+        # Query the collection
+        results = collection.query(
+            query_texts=[query_term],
+            n_results=top_k
+        )
+        
+        # Extract documents from results
+        if results and 'documents' in results and len(results['documents']) > 0:
+            return results['documents'][0]
+        else:
+            return []
+    except Exception as e:
+        print(f"Warning: Could not query ChromaDB collection: {e}")
+        return []
+
 def analyze_with_gemini(data_str):
     """
-    Send data to Gemini Flash model for analysis.
+    Send data to Gemini Flash model for analysis with RAG context.
     
     Parameters:
     -----------
@@ -171,15 +210,27 @@ def analyze_with_gemini(data_str):
     # Initialize the model
     model = genai.GenerativeModel(model_name)
     
+    # Query ChromaDB for 'Short Cycling' context
+    print("Querying manual collection for 'Short Cycling'...")
+    manual_chunks = query_manual_collection("Short Cycling", top_k=2)
+    
+    # Build context from manual chunks
+    context_str = ""
+    if manual_chunks:
+        context_str = "\n\nCONTEXT FROM MANUAL:\n"
+        context_str += "=" * 50 + "\n"
+        for i, chunk in enumerate(manual_chunks, 1):
+            context_str += f"\n[Chunk {i}]\n{chunk}\n"
+        context_str += "=" * 50 + "\n"
+    
     # System prompt
     system_prompt = (
-        "You are a senior HVAC technician. Analyze the data. "
-        "If short-cycling is detected, explain WHY it is bad (wear and tear) "
-        "and recommend a fix to the homeowner. Keep it professional but urgent."
+        "Use the provided Context from the manual to recommend a specific fix. "
+        "Cite the Error Code if found."
     )
     
-    # Combine system prompt with data
-    full_prompt = f"{system_prompt}\n\n{data_str}"
+    # Combine system prompt, context, and data
+    full_prompt = f"{system_prompt}{context_str}\n\n{data_str}"
     
     print("Sending data to Gemini for analysis...")
     
