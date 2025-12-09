@@ -1,0 +1,348 @@
+================================================================================
+                    CARETAKER X100 HVAC UNIT
+                    TECHNICAL SERVICE MANUAL
+                    Revision 3.2 | Model Year 2024
+================================================================================
+
+TABLE OF CONTENTS
+
+1. Introduction
+2. System Overview
+3. Installation Guidelines
+4. Operation Procedures
+5. Maintenance Schedule
+6. Error Codes
+7. Troubleshooting Guide
+8. Technical Specifications
+9. Warranty Information
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+This technical manual provides comprehensive information for the installation,
+operation, maintenance, and troubleshooting of the Caretaker X100 HVAC Unit.
+This document is intended for certified HVAC technicians and authorized service
+personnel only.
+
+The Caretaker X100 is a high-efficiency, variable-speed HVAC system designed
+for residential and light commercial applications. This unit features advanced
+diagnostic capabilities, energy-efficient operation, and intelligent climate
+control systems.
+
+================================================================================
+2. SYSTEM OVERVIEW
+================================================================================
+
+The Caretaker X100 HVAC Unit consists of the following primary components:
+
+- Variable-Speed Compressor Module
+- Evaporator Coil Assembly
+- Condenser Unit with Smart Fan Control
+- Electronic Control Board (ECB)
+- Integrated Diagnostic System
+- Advanced Air Filtration System
+- Digital Thermostat Interface
+
+System Capacity Range: 1.5 - 5.0 Tons
+SEER Rating: 18.5 - 21.0
+Operating Voltage: 208/230V, Single Phase
+Refrigerant Type: R-410A
+
+================================================================================
+3. INSTALLATION GUIDELINES
+================================================================================
+
+IMPORTANT: All installation work must be performed by a licensed HVAC
+technician in accordance with local building codes and regulations.
+
+3.1 Site Preparation
+- Ensure adequate clearance around unit (minimum 24 inches on all sides)
+- Verify level mounting surface
+- Confirm proper electrical service availability
+- Check refrigerant line routing requirements
+
+3.2 Electrical Connections
+- Follow National Electrical Code (NEC) requirements
+- Use appropriate circuit breakers and disconnect switches
+- Verify proper grounding
+- Test all electrical connections before energizing
+
+3.3 Refrigerant Line Installation
+- Use approved refrigerant line sets
+- Ensure proper line sizing per unit capacity
+- Install line insulation as specified
+- Perform leak testing before charging
+
+================================================================================
+4. OPERATION PROCEDURES
+================================================================================
+
+4.1 Initial Startup
+1. Verify all installation steps are complete
+2. Check refrigerant charge levels
+3. Inspect electrical connections
+4. Clear all error codes from diagnostic system
+5. Power on unit and observe startup sequence
+6. Verify proper airflow and temperature differentials
+
+4.2 Normal Operation
+The Caretaker X100 operates in automatic mode by default. The system will
+automatically adjust compressor speed and fan operation based on load
+requirements and ambient conditions.
+
+4.3 Shutdown Procedures
+- Use proper shutdown sequence via control interface
+- Allow system to complete defrost cycle if applicable
+- Disconnect power at service disconnect
+- Close refrigerant service valves if extended shutdown
+
+================================================================================
+5. MAINTENANCE SCHEDULE
+================================================================================
+
+Regular maintenance is essential for optimal performance and system longevity.
+
+Monthly:
+- Inspect and clean air filters
+- Check condensate drain lines
+- Verify thermostat operation
+
+Quarterly:
+- Inspect evaporator and condenser coils
+- Check refrigerant levels
+- Test safety controls
+- Inspect electrical connections
+
+Annually:
+- Complete system performance evaluation
+- Refrigerant leak detection test
+- Compressor oil analysis (if applicable)
+- Calibration of all sensors and controls
+- Professional deep cleaning of all components
+
+================================================================================
+6. ERROR CODES
+================================================================================
+
+The Caretaker X100 features an integrated diagnostic system that monitors
+system performance and reports operational issues through a series of error
+codes. When an error condition is detected, the system will display the
+appropriate error code on the control panel and may enter a protective
+shutdown mode.
+
+All error codes should be addressed promptly by qualified service personnel.
+Refer to the troubleshooting guide (Section 7) for detailed diagnostic
+procedures.
+
+ERROR 001: FILTER CLOG
+-----------------------
+Severity: Warning
+System Response: Reduced airflow mode, efficiency degradation
+
+Description:
+The system has detected excessive restriction in the air filtration system,
+indicating that the air filter requires replacement or cleaning. A clogged
+filter reduces system efficiency, increases energy consumption, and may lead
+to coil freezing or compressor damage if left unaddressed.
+
+Diagnostic Indicators:
+- Reduced airflow at supply registers
+- Increased static pressure across filter
+- Elevated system operating temperatures
+- Reduced cooling/heating capacity
+
+Recommended Actions:
+1. Power down system at service disconnect
+2. Locate and inspect air filter(s)
+3. Replace disposable filters or clean reusable filters according to
+   manufacturer specifications
+4. Verify filter installation is correct (check airflow direction arrows)
+5. Clear error code from diagnostic system
+6. Restart system and verify normal operation
+7. Document service in maintenance log
+
+Prevention:
+- Replace or clean filters according to maintenance schedule
+- Use appropriate filter MERV rating for application
+- Monitor filter condition monthly
+
+ERROR 002: LOW REFRIGERANT
+---------------------------
+Severity: Critical
+System Response: Compressor protection shutdown, system lockout
+
+Description:
+The diagnostic system has detected refrigerant charge levels below acceptable
+operating parameters. Low refrigerant charge can cause compressor damage,
+reduced system capacity, and inefficient operation. This condition requires
+immediate attention by a certified HVAC technician.
+
+Diagnostic Indicators:
+- Subcooling and superheat values outside normal range
+- Reduced system capacity
+- Compressor overheating
+- Potential ice formation on evaporator coil
+- Elevated compressor current draw
+
+Recommended Actions:
+1. IMMEDIATELY shut down system at service disconnect
+2. DO NOT attempt to operate system until issue is resolved
+3. Perform comprehensive leak detection test on entire refrigerant circuit
+4. Identify and repair all refrigerant leaks
+5. Evacuate system to proper vacuum levels
+6. Recharge system with correct refrigerant type and quantity per unit
+   specifications
+7. Verify proper subcooling and superheat values
+8. Test system operation under load conditions
+9. Clear error code and document service
+
+WARNING: Refrigerant handling requires EPA Section 608 certification.
+Unauthorized refrigerant handling is illegal and dangerous.
+
+Prevention:
+- Annual professional leak detection inspections
+- Proper installation of refrigerant line sets
+- Protection of refrigerant lines from physical damage
+- Regular monitoring of system performance metrics
+
+ERROR 003: SHORT CYCLING
+-------------------------
+Severity: Warning
+System Response: Normal operation with efficiency reduction
+
+Description:
+The system has detected excessive on/off cycling behavior, indicating that
+the unit is starting and stopping more frequently than optimal. Short cycling
+reduces system efficiency, increases wear on components, and may indicate
+improper system sizing or control configuration issues.
+
+Root Causes:
+- Thermostat placement in location affected by direct sunlight, drafts, or
+  heat sources
+- Oversized unit relative to space requirements
+- Incorrect hysteresis settings on control system
+- Rapid temperature fluctuations in conditioned space
+- Faulty temperature sensors
+
+Diagnostic Indicators:
+- Compressor cycles more than 6 times per hour under normal load
+- Rapid temperature swings in conditioned space
+- Increased energy consumption
+- Premature component wear
+
+Recommended Actions:
+1. Verify thermostat placement is optimal (away from heat sources, drafts,
+   and direct sunlight)
+2. Evaluate system sizing relative to space requirements
+3. Adjust hysteresis settings on control system:
+   - Access service menu on control board
+   - Navigate to "System Settings" > "Hysteresis Control"
+   - Adjust differential to recommended range (typically 2-3°F for cooling,
+     1-2°F for heating)
+   - Allow system to operate and monitor cycling behavior
+4. If issue persists, consider:
+   - Relocating thermostat to more appropriate location
+   - Installing additional temperature sensors for averaging
+   - Consulting with system designer regarding unit sizing
+5. Clear error code after resolution
+6. Monitor system operation for 24-48 hours to verify correction
+
+Prevention:
+- Proper system sizing during initial installation
+- Correct thermostat placement during installation
+- Regular calibration of temperature sensors
+- Monitoring of system cycling behavior during routine maintenance
+
+================================================================================
+7. TROUBLESHOOTING GUIDE
+================================================================================
+
+For detailed troubleshooting procedures related to specific error codes,
+refer to Section 6 (Error Codes). General troubleshooting guidelines:
+
+7.1 System Will Not Start
+- Check electrical power supply
+- Verify circuit breakers and fuses
+- Inspect control board for error codes
+- Check safety switches and limit controls
+
+7.2 Insufficient Cooling/Heating
+- Verify filter condition (see Error 001)
+- Check refrigerant charge (see Error 002)
+- Inspect coils for cleanliness
+- Verify proper airflow
+- Check thermostat calibration
+
+7.3 Unusual Noises
+- Inspect fan blades and motor
+- Check compressor mounting
+- Verify refrigerant line routing
+- Inspect for loose components
+
+================================================================================
+8. TECHNICAL SPECIFICATIONS
+================================================================================
+
+Model: Caretaker X100
+Manufacturer: Caretaker Industries
+Warranty Period: 10 Years Parts, 5 Years Labor
+
+Electrical Specifications:
+- Voltage: 208/230V ±10%
+- Frequency: 60 Hz
+- Minimum Circuit Ampacity: See unit rating plate
+- Maximum Overcurrent Protection: See unit rating plate
+
+Refrigerant Specifications:
+- Type: R-410A
+- Charge Quantity: See unit rating plate
+- Operating Pressure Range: See pressure-temperature chart
+
+Physical Dimensions:
+- Outdoor Unit: See installation manual
+- Indoor Unit: See installation manual
+- Weight: See unit rating plate
+
+Performance Specifications:
+- Cooling Capacity: 18,000 - 60,000 BTU/h
+- Heating Capacity: 18,000 - 60,000 BTU/h
+- SEER: 18.5 - 21.0
+- HSPF: 9.0 - 10.5
+- Sound Level: < 72 dBA (outdoor unit)
+
+================================================================================
+9. WARRANTY INFORMATION
+================================================================================
+
+The Caretaker X100 HVAC Unit is covered by a limited warranty as follows:
+
+- Compressor: 10 years parts and labor
+- Heat Exchanger: 10 years parts and labor
+- All Other Components: 5 years parts, 1 year labor
+- Control Board: 5 years parts, 1 year labor
+
+Warranty coverage requires:
+- Professional installation by authorized dealer
+- Registration within 90 days of installation
+- Regular maintenance per schedule in Section 5
+- Use of genuine Caretaker replacement parts
+
+For warranty claims, contact Caretaker Customer Service at:
+Phone: 1-800-CARETAKER
+Email: service@caretakerindustries.com
+Website: www.caretakerindustries.com/support
+
+================================================================================
+END OF MANUAL
+================================================================================
+
+Document Control:
+Manual Part Number: CT-X100-TSM-2024
+Revision: 3.2
+Date: 2024
+Copyright © 2024 Caretaker Industries. All rights reserved.
+
+For technical support or additional documentation, visit:
+www.caretakerindustries.com/technical-support
+
