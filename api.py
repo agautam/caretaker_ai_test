@@ -1,187 +1,166 @@
 """
 FastAPI application for HVAC sensor data analysis.
-
-Endpoints:
-- GET /latest: Returns the most recent sensor reading
-- GET /diagnose: Detects and returns short-cycling events
+Implements the "Digital Twin" schema using Pydantic for explicit AI contracts.
 """
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import pandas as pd
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, List, Optional, Literal
+from pydantic import BaseModel, Field
 import os
+
+# --- 1. THE DIGITAL TWIN SCHEMA (Pydantic) ---
+class AnomalyEvent(BaseModel):
+    issue_type: str = Field(..., description="The classification of the issue (e.g., SHORT_CYCLING)")
+    severity: Literal["LOW", "MEDIUM", "CRITICAL"]
+    timestamps: List[str]
+    description: str
+
+class SystemHealth(BaseModel):
+    unit_id: str
+    status: Literal["HEALTHY", "WARNING", "CRITICAL"] = Field(..., description="High-level health flag")
+    last_contact: str
+    anomalies: List[AnomalyEvent] = []
+    raw_metrics_summary: Dict[str, float] = {}
 
 # Global variable to store the DataFrame
 hvac_df = None
 
-def detect_short_cycling(df, energy_threshold=1.0):
+# --- 2. CORE LOGIC ---
+def detect_short_cycling_for_unit(unit_df, energy_threshold=1.0) -> List[str]:
     """
-    Detect short-cycling events in HVAC data.
-    
-    Parameters:
-    -----------
-    df : pandas.DataFrame
-        DataFrame with columns: timestamp, unit_id, energy_consumption
-    energy_threshold : float
-        Energy consumption threshold to determine ON/OFF state (kW)
-        Values above threshold = ON, below = OFF
-    
-    Returns:
-    --------
-    dict
-        Dictionary mapping unit_id to list of short-cycling event timestamps
+    Detects short-cycling specifically for a single unit's dataframe.
+    Returns a list of timestamps where the pattern was found.
     """
+    if unit_df.empty:
+        return []
+
+    # Sort
+    df = unit_df.sort_values('timestamp').reset_index(drop=True)
     
-    # Convert timestamp to datetime if it's a string
-    if df['timestamp'].dtype == 'object':
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+    # State: 1 = ON, 0 = OFF
+    df['state'] = (df['energy_consumption'] > energy_threshold).astype(int)
     
-    # Sort by unit_id and timestamp
-    df = df.sort_values(['unit_id', 'timestamp']).reset_index(drop=True)
+    # Detect transitions (ON -> OFF)
+    # diff() gives 1 if 0->1, -1 if 1->0. We want 1->0 (falling edge)
+    # But simpler logic:
+    df['prev_state'] = df['state'].shift(1)
+    # Transition is True where Prev was 1 (ON) and Current is 0 (OFF)
+    transitions = df[(df['prev_state'] == 1) & (df['state'] == 0)].copy()
     
-    # Determine ON/OFF state based on energy consumption
-    df['state'] = df['energy_consumption'] > energy_threshold
-    df['state'] = df['state'].astype(int)  # True=1 (ON), False=0 (OFF)
+    if len(transitions) == 0:
+        return []
+
+    short_cycle_timestamps = []
     
-    short_cycling_events = {}
-    
-    # Process each unit separately
-    for unit_id in df['unit_id'].unique():
-        unit_data = df[df['unit_id'] == unit_id].copy()
-        unit_data = unit_data.sort_values('timestamp').reset_index(drop=True)
+    # Sliding window logic
+    for i in range(len(transitions)):
+        current_time = transitions.iloc[i]['timestamp']
+        window_end = current_time + timedelta(hours=1)
         
-        # Detect state transitions (ON->OFF)
-        unit_data['prev_state'] = unit_data['state'].shift(1)
-        unit_data['state_change'] = (unit_data['prev_state'] == 1) & (unit_data['state'] == 0)
+        transitions_in_window = transitions[
+            (transitions['timestamp'] >= current_time) & 
+            (transitions['timestamp'] < window_end)
+        ]
         
-        # Get timestamps of ON->OFF transitions
-        transitions = unit_data[unit_data['state_change'] == True].copy()
-        
-        if len(transitions) == 0:
-            continue
-        
-        # For each transition, check if it's part of a short-cycling pattern
-        # We need to find periods where there are >3 ON->OFF transitions within 1 hour
-        
-        short_cycle_timestamps = []
-        
-        # Use a sliding 1-hour window
-        for i in range(len(transitions)):
-            current_time = transitions.iloc[i]['timestamp']
-            window_end = current_time + timedelta(hours=1)
-            
-            # Count transitions in this 1-hour window
-            transitions_in_window = transitions[
-                (transitions['timestamp'] >= current_time) & 
-                (transitions['timestamp'] < window_end)
-            ]
-            
-            if len(transitions_in_window) > 3:
-                # This is a short-cycling event
-                # Add all timestamps in this window to the list
-                for _, row in transitions_in_window.iterrows():
-                    if row['timestamp'] not in short_cycle_timestamps:
-                        short_cycle_timestamps.append(row['timestamp'])
-        
-        # Remove duplicates and sort
-        short_cycle_timestamps = sorted(list(set(short_cycle_timestamps)))
-        
-        if short_cycle_timestamps:
-            short_cycling_events[unit_id] = short_cycle_timestamps
-    
-    return short_cycling_events
+        # Rule: > 3 transitions in 1 hour
+        if len(transitions_in_window) >= 3:
+            for _, row in transitions_in_window.iterrows():
+                if row['timestamp'] not in short_cycle_timestamps:
+                    short_cycle_timestamps.append(row['timestamp'])
+                    
+    return sorted(list(set(short_cycle_timestamps)))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load data when the app starts."""
     global hvac_df
-    
     csv_file = 'hvac_sensor_data.csv'
     
     if not os.path.exists(csv_file):
-        raise FileNotFoundError(
-            f"HVAC data file '{csv_file}' not found. "
-            "Please run 'generate_hvac_data.py' first to generate the data."
-        )
+        raise FileNotFoundError(f"HVAC data file '{csv_file}' not found. Run 'generate_hvac_data.py' first.")
     
     print(f"Loading HVAC sensor data from {csv_file}...")
     hvac_df = pd.read_csv(csv_file)
-    
-    # Convert timestamp to datetime
     hvac_df['timestamp'] = pd.to_datetime(hvac_df['timestamp'])
     
     print(f"Loaded {len(hvac_df)} records")
-    print(f"Time range: {hvac_df['timestamp'].min()} to {hvac_df['timestamp'].max()}")
-    print(f"Units: {', '.join(hvac_df['unit_id'].unique())}")
-    
     yield
-    
-    # Cleanup (if needed)
     hvac_df = None
 
 app = FastAPI(
-    title="HVAC Sensor Data API",
-    description="API for querying HVAC sensor data and detecting short-cycling events",
-    version="1.0.0",
+    title="Caretaker Hubbub API",
+    description="Digital Twin interface for HVAC fleet monitoring",
+    version="2.0.0",
     lifespan=lifespan
 )
 
+# --- 3. ENDPOINTS ---
+
 @app.get("/")
 async def root():
-    """Root endpoint with API information."""
     return {
-        "message": "HVAC Sensor Data API",
+        "message": "Caretaker Hubbub API v2.0",
         "endpoints": {
-            "/latest": "GET - Returns the most recent sensor reading",
-            "/diagnose": "GET - Detects and returns short-cycling events"
+            "/health/{unit_id}": "GET - Returns Digital Twin object (SystemHealth)"
         }
     }
 
+@app.get("/health/{unit_id}", response_model=SystemHealth)
+async def get_unit_health(unit_id: str):
+    """
+    Returns the Digital Twin status for a specific unit.
+    The API (not the AI) determines if the status is HEALTHY or CRITICAL.
+    """
+    global hvac_df
+    if hvac_df is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+
+    # Filter for unit
+    unit_df = hvac_df[hvac_df['unit_id'] == unit_id].copy()
+    if unit_df.empty:
+        raise HTTPException(status_code=404, detail=f"Unit {unit_id} not found")
+
+    # --- Run Analysis ---
+    short_cycle_ts = detect_short_cycling_for_unit(unit_df)
+    
+    # --- Build the Twin State ---
+    anomalies = []
+    status = "HEALTHY"
+    
+    # If logic detects issues, escalate status
+    if short_cycle_ts:
+        status = "CRITICAL"
+        anomalies.append(AnomalyEvent(
+            issue_type="SHORT_CYCLING",
+            severity="CRITICAL",
+            timestamps=[ts.isoformat() for ts in short_cycle_ts],
+            description=f"Unit cycled ON/OFF {len(short_cycle_ts)} times rapidly, exceeding safety threshold."
+        ))
+
+    # Calculate latest metrics for context
+    latest_row = unit_df.loc[unit_df['timestamp'].idxmax()]
+    
+    return SystemHealth(
+        unit_id=unit_id,
+        status=status,
+        last_contact=latest_row['timestamp'].isoformat(),
+        anomalies=anomalies,
+        raw_metrics_summary={
+            "current_temp": float(latest_row['temperature']),
+            "current_energy": float(latest_row['energy_consumption']),
+            "error_code": float(latest_row['error_code']) # 0.0 usually means fine
+        }
+    )
+
 @app.get("/latest")
 async def get_latest():
-    """
-    Returns the very last row of data (current status).
-    
-    Returns the most recent sensor reading across all units.
-    """
+    """Legacy endpoint for raw data checks."""
     global hvac_df
-    
-    if hvac_df is None:
-        raise HTTPException(status_code=500, detail="Data not loaded")
-    
-    # Get the row with the latest timestamp
-    latest_row = hvac_df.loc[hvac_df['timestamp'].idxmax()]
-    
-    # Convert to dictionary and format timestamp as string
-    result = latest_row.to_dict()
-    result['timestamp'] = result['timestamp'].isoformat()
-    
-    return result
-
-@app.get("/diagnose")
-async def diagnose():
-    """
-    Runs the short-cycling detection logic and returns a JSON list of timestamps 
-    where issues were found.
-    
-    Returns a dictionary mapping unit_id to a list of timestamps where 
-    short-cycling events were detected.
-    """
-    global hvac_df
-    
-    if hvac_df is None:
-        raise HTTPException(status_code=500, detail="Data not loaded")
-    
-    # Run short-cycling detection
-    short_cycling_events = detect_short_cycling(hvac_df, energy_threshold=1.0)
-    
-    # Convert timestamps to ISO format strings for JSON serialization
-    result = {}
-    for unit_id, timestamps in short_cycling_events.items():
-        result[unit_id] = [ts.isoformat() for ts in timestamps]
-    
-    return result
-
+    if hvac_df is None: return {}
+    latest = hvac_df.loc[hvac_df['timestamp'].idxmax()]
+    res = latest.to_dict()
+    res['timestamp'] = res['timestamp'].isoformat()
+    return res

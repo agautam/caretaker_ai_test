@@ -2,13 +2,13 @@ import chromadb
 from chromadb.config import Settings
 import re
 
-def split_into_chunks(text, words_per_chunk=100):
+def split_into_chunks(text, words_per_chunk=100, overlap=20):
     """Split text into chunks of approximately the specified number of words."""
     # Split text into words
     words = text.split()
     chunks = []
     
-    for i in range(0, len(words), words_per_chunk):
+    for i in range(0, len(words), words_per_chunk-overlap):
         chunk = ' '.join(words[i:i + words_per_chunk])
         chunks.append(chunk)
     
@@ -20,7 +20,7 @@ def main():
         manual_text = f.read()
     
     # Split text into chunks of 100 words
-    chunks = split_into_chunks(manual_text, words_per_chunk=100)
+    chunks = split_into_chunks(manual_text, words_per_chunk=100, overlap=20)
     
     # Create a persistent ChromaDB client
     client = chromadb.PersistentClient(path="./chroma_db")
